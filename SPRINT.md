@@ -904,7 +904,7 @@ Noticed during a sprint, deliberately not fixed then. Reviewed once all sprints 
 | D7 | The wall visualiser is illustrative, not life-size | S5 | True scale makes small frames specks |
 | D8 | `typedRoutes` switched off in `next.config.ts` | S4 | Turn back on once every route exists |
 | D9 | `SUPABASE_SERVICE_ROLE_KEY` is still empty in `.env` | S3 | **Now a blocker.** Staff sign-in is password + TOTP, so the first super-admin needs a password set from the database (`npm run staff:password`), and creating admins uses `auth.admin.createUser`. Neither runs without the key. Also needed for D19 |
-| D10 | `DATABASE_URL` uses the IPv6-only direct host | S3 | Works locally; deployment needs the Session Pooler URI |
+| D10 | `DATABASE_URL` used the IPv6-only direct host | S3 | **Hit on the first Vercel deploy — every page 500.** Supabase direct hosts are IPv6-only; Vercel has no IPv6 egress. Fix is the **Transaction pooler on 6543** (`db/index.ts` already sets `prepare:false`, and now `max:1` for serverless). Warning written into `.env.example` |
 | D11 | Custom Studio and Shop Figma frames use the **older** header and footer | S5 | Client chose the PDP style as canonical, so these will not pixel-match |
 | D12 | Free-shipping threshold is ₹1,499; the PDP implies ~₹400 | S4 | Mock setting, client's call |
 | D13 | No per-user coupon usage limit | S0 | Only the global limit and the new-customer rule |
