@@ -12,6 +12,7 @@ import { randomBytes } from 'node:crypto'
 import { eq } from 'drizzle-orm'
 import { createClient } from '@supabase/supabase-js'
 import { db } from '../db/index.ts'
+import { url as appUrl, ADMIN_SIGN_IN } from '../lib/env.ts'
 import { users } from '../db/schema.ts'
 
 const [email, given] = process.argv.slice(2)
@@ -59,6 +60,6 @@ if (process.argv.includes('--reset-mfa')) {
 }
 
 console.log(`\n  ${email}\n  password:  ${password}\n`)
-console.log('Sign in at http://localhost:3000/framezee/a/auth/admin')
+console.log(`Sign in at ${appUrl(ADMIN_SIGN_IN)}`)
 console.log('You will set up an authenticator app on the first sign-in.\n')
 process.exit(0)

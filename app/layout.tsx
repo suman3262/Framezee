@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { SITE_URL } from '@/lib/env.ts'
 import { Inter, Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
 
@@ -21,6 +22,8 @@ const playfair = Playfair_Display({
 })
 
 export const metadata: Metadata = {
+  // Without this, Next warns and resolves social-preview images against localhost.
+  metadataBase: new URL(SITE_URL),
   title: 'Framezee — Custom photo frames, made in India',
   description:
     'Ready-made and made-to-measure photo frames. Printed, framed and delivered across India.',

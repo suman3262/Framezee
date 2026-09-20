@@ -1,5 +1,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+/** Staff have their own door, so a signed-out visitor to /admin is sent there instead. */
+import { ADMIN_SIGN_IN } from './lib/env.ts'
 
 /**
  * Refreshes the Supabase session cookie and bounces signed-out visitors away from
@@ -10,8 +12,6 @@ import { NextResponse, type NextRequest } from 'next/server'
  * with Drizzle before any admin page renders.
  */
 const SIGNED_IN_ONLY = ['/account', '/cart', '/checkout', '/wishlist']
-/** Staff have their own door, so a signed-out visitor to /admin is sent there instead. */
-const ADMIN_SIGN_IN = '/framezee/a/auth/admin'
 
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request })

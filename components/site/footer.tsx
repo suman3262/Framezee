@@ -50,8 +50,8 @@ const CARE = [
 ]
 
 const SOCIAL = [
-  { icon: '/figma/pdp-instagram.svg', label: 'Instagram', href: 'https://instagram.com/framezee' },
-  { icon: '/figma/pdp-pinterest.svg', label: 'Pinterest', href: 'https://pinterest.com/framezee' },
+  { icon: '/figma/pdp-instagram.svg', label: 'Instagram', href: BUSINESS.instagram },
+  { icon: '/figma/pdp-pinterest.svg', label: 'Pinterest', href: BUSINESS.pinterest },
   { icon: '/figma/pdp-community.svg', label: 'WhatsApp', href: `https://wa.me/${BUSINESS.phone.replace(/\D/g, '')}` },
   { icon: '/figma/pdp-share.svg', label: 'Email us', href: `mailto:${BUSINESS.email}` },
 ]

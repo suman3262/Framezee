@@ -844,6 +844,24 @@ almost every screen could *show* but not *do*.
 - [x] **`npm run links`** — walks every literal href and fails on any route that does not
       exist. Written after three families of dead links shipped
 
+### Configuration
+
+- [x] **`lib/env.ts`** — every environment-dependent value read and validated in one
+      place. Scattered `process.env` reads are how a hardcoded `localhost:3000` reaches
+      production: nothing fails, the link just points at the wrong machine
+- [x] `NEXT_PUBLIC_APP_ENV` — development | staging | production
+- [x] `NEXT_PUBLIC_SITE_URL` — defaults to localhost in development, and **production
+      refuses to start** without it, or with a non-https one
+- [x] `metadataBase` set from it, so social previews resolve against the real domain
+- [x] `ADMIN_SIGN_IN` moved into `lib/env.ts`: importing `lib/auth.ts` from a plain node
+      script drags in `next/navigation` and fails. Middleware and the script now share
+      the one definition instead of keeping copies
+- [x] Social handles moved into `lib/business.ts` — public, not per-environment
+- [x] `.env.example` refreshed: it was missing `FAST2SMS_API_KEY` entirely
+
+Verified: `dev` and `prod` behaviour exercised across six cases, and no server-side secret
+appears in the rendered HTML.
+
 ### Bugs found and fixed along the way
 
 | What | Why it was invisible |

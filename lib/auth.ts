@@ -3,17 +3,12 @@ import { redirect } from 'next/navigation'
 import { db } from '../db/index.ts'
 import { users } from '../db/schema.ts'
 import { createClient } from './supabase/server.ts'
+import { ADMIN_SIGN_IN } from './env.ts'
 
 export type AppUser = typeof users.$inferSelect
 
-/**
- * The unguessable door to the admin. Only the sign-in page lives here; the dashboard
- * stays on /admin, which is gated by role and MFA rather than by obscurity.
- *
- * This is one constant on purpose — a secret path spread across a dozen redirects is a
- * secret path that gets half-changed.
- */
-export const ADMIN_SIGN_IN = '/framezee/a/auth/admin'
+/** Re-exported so `@/lib/auth.ts` stays the one import for anything gate-related. */
+export { ADMIN_SIGN_IN } from './env.ts'
 
 /**
  * The signed-in user, or null. Reads the profile row from our own tables — the auth.users

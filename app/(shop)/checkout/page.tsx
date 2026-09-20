@@ -6,6 +6,8 @@ import { addresses, orders } from '@/db/schema.ts'
 import { requireUser } from '@/lib/auth.ts'
 import { loadBasket, shippingFor } from '@/lib/basket.ts'
 import { buildOrderDraft } from '@/lib/orders.ts'
+import { PayButton } from '@/components/checkout/pay-button.tsx'
+import { razorpayReady } from '@/lib/env.ts'
 import { formatPhone } from '@/lib/phone.ts'
 import { Container } from '@/components/home/section-heading.tsx'
 import { BasketLines } from '@/components/checkout/basket-lines.tsx'
@@ -168,18 +170,28 @@ export default async function CheckoutPage() {
               Remove the unavailable line before paying.
             </p>
           ) : (
-            <>
-              <button
-                disabled
-                className="mt-4 w-full cursor-not-allowed rounded-full bg-accent px-6 py-3 font-display text-base font-semibold text-accent-ink opacity-60"
-              >
-                Pay with Razorpay
-              </button>
-              <p className="mt-2 text-center text-[11px] leading-4 text-faint">
-                Waiting on Razorpay test keys. Everything up to this button is finished and
-                verified; the order is created only once a payment webhook confirms it.
-              </p>
-            </>
+            <div className="mt-4">
+              {razorpayReady ? (
+                <PayButton
+                  addressId={shipTo?.id ?? null}
+                  totalPaise={draft?.totalPaise ?? 0}
+                  disabled={!draft}
+                />
+              ) : (
+                <>
+                  <button
+                    disabled
+                    className="w-full cursor-not-allowed rounded-full bg-accent px-6 py-3 font-display text-base font-semibold text-accent-ink opacity-60"
+                  >
+                    Pay with Razorpay
+                  </button>
+                  <p className="mt-2 text-center text-[11px] leading-4 text-faint">
+                    Payments are not configured. Set RAZORPAY_KEY_ID and
+                    RAZORPAY_KEY_SECRET, then restart the server.
+                  </p>
+                </>
+              )}
+            </div>
           )}
         </OrderSummary>
       </div>

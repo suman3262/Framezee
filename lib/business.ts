@@ -19,6 +19,9 @@ export const BUSINESS = {
   phoneHref: 'tel:+919876543210',
   email: 'support@framezee.in',
   helpCentre: 'help.framezee.in',
+  /** Public profiles. Not secrets and not per-environment, so config rather than .env. */
+  instagram: 'https://instagram.com/framezee',
+  pinterest: 'https://pinterest.com/framezee',
   copyrightYear: 2025,
 } as const
 
