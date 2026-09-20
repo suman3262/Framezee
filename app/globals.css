@@ -1,0 +1,230 @@
+@import 'tailwindcss';
+
+/*
+ * Framezee design tokens — from the Product Details frames (3:10064 / 3:10737),
+ * which the client confirmed as the current direction. The home page was migrated
+ * onto these; the older Sprint 2 values are gone.
+ *
+ * Inter carries body text and controls, Plus Jakarta Sans the headings and brand,
+ * Playfair Display only the home hero.
+ */
+
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-subtle: var(--subtle);
+  --color-ink: var(--ink);
+  --color-body: var(--body);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+
+  --color-violet: var(--violet);
+  --color-violet-deep: var(--violet-deep);
+  --color-violet-tint: var(--violet-tint);
+  --color-violet-ink: var(--violet-ink);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-dark: var(--dark);
+  --color-dark-ink: var(--dark-ink);
+
+  /*
+   * Admin-only tokens, from the framezee_super_admin design folders. The admin sits on a
+   * light canvas with a dark navigation chrome, and it does not follow the store's
+   * dark mode — a workshop screen stays legible under workshop lighting.
+   */
+  --color-nav-chrome: var(--nav-chrome);
+  --color-nav-surface: var(--nav-surface);
+  --color-nav-border: var(--nav-border);
+  --color-nav-muted: var(--nav-muted);
+  --color-card: var(--card);
+  --color-t1: var(--t1);
+  --color-t2: var(--t2);
+  --color-t3: var(--t3);
+  --color-rule: var(--rule);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+}
+
+:root {
+  --page: #fcf9f4;
+  --surface: #ffffff;
+  --subtle: #f6f3ee;
+  --ink: #1c1c19;
+  --body: #494455;
+  --faint: #7a7487;
+  --line: #eee9e1;
+
+  --violet: #6c3ce9; /* brand: top strip, nav pill, logo */
+  --violet-deep: #5314d1; /* accents: links, badges, avatar */
+  --violet-tint: #e8deff; /* selected chip background */
+  --violet-ink: #20005f; /* text on the tint */
+  --accent: #ffc329;
+  --accent-ink: #6f5100;
+  --nav-chrome: #12111a;
+  --nav-surface: #1a1926;
+  --nav-border: #2e2c3d;
+  --nav-muted: #cac3d8;
+  --card: #ffffff;
+  --t1: #18181b;
+  --t2: #52525b;
+  --t3: #71717a;
+  --rule: #e5e0d8;
+  --ok: #166534;
+  --ok-bg: #dcfce7;
+  --warn: #92400e;
+  --warn-bg: #fef3c7;
+  --info: #5b21b6;
+  --info-bg: #ede9fe;
+  --bad: #991b1b;
+  --bad-bg: #fee2e2;
+  --dark: #31302d;
+  --dark-ink: #f3f0eb;
+}
+
+/*
+ * `data-theme` is the single source of truth, so the semantic tokens and Tailwind's
+ * `dark:` utilities can never disagree. A script in app/layout.tsx sets the attribute
+ * from the saved choice or the OS preference before first paint.
+ */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+:root[data-theme='dark'] {
+  --page: #151311;
+  --surface: #1f1d1a;
+  --subtle: #262320;
+  --ink: #f5f2ec;
+  --body: #cfc9c0;
+  --faint: #a49d95;
+  --line: #322e2a;
+  --violet-tint: #2a1a55;
+  --violet-ink: #dbccff;
+  --dark: #f3f0eb;
+  --dark-ink: #1c1c19;
+}
+
+body {
+  background: var(--page);
+  color: var(--ink);
+}
+
+/* The ticker scrolls one full copy of its content, then snaps back. */
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-ticker {
+  animation: ticker 40s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ticker {
+    animation: none;
+  }
+}
+
+/*
+ * The hero shelf: four frames, each taking its turn to step forward.
+ *
+ * One keyframe for all of them, offset by a negative delay so frame 2 starts a quarter
+ * of the way through the same loop. Only transform and filter animate, so the browser
+ * never re-lays-out the page for it, and transform-origin keeps every frame standing on
+ * the shelf rather than floating off it.
+ */
+@keyframes hero-feature {
+  0%,
+  3% {
+    transform: translateY(0) scale(1);
+    filter: brightness(0.94) saturate(0.92);
+  }
+  8%,
+  20% {
+    transform: translateY(-12px) scale(1.16);
+    filter: brightness(1) saturate(1);
+  }
+  25%,
+  100% {
+    transform: translateY(0) scale(1);
+    filter: brightness(0.94) saturate(0.92);
+  }
+}
+
+.hero-frame {
+  transform-origin: bottom center;
+  animation: hero-feature 16s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+/* Motion is decoration here; the frames read perfectly well standing still. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-frame {
+    animation: none;
+  }
+}
+
+/*
+ * The gallery-wall strip: frames drifting left to right, forever.
+ *
+ * The track holds the set twice and slides from -50% to 0, so the second copy is exactly
+ * where the first started when the loop restarts — no jump, and no JavaScript keeping
+ * count. Only transform animates, so it never costs a layout.
+ */
+@keyframes wall-slide {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.wall-track {
+  width: max-content;
+  animation: wall-slide 9s linear infinite;
+}
+
+/*
+ * iOS-style glass. Flat translucency, a heavy blur and a hairline edge — no gradient,
+ * which is what made the earlier version read as a painted panel rather than a pane.
+ *
+ * Defined once because the hero and the promo cards have to match; three copies of a
+ * blur value drift apart the first time one of them is tweaked.
+ */
+.glass {
+  background: rgba(255, 255, 255, 0.55);
+  /*
+   * Unprefixed only. Writing both meant the minifier deduped to the last declaration
+   * and shipped -webkit- alone, which Chromium does not alias — the panes rendered with
+   * no blur at all. The build adds whatever prefixes the browser targets need.
+   */
+  backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow:
+    0 8px 32px rgba(28, 25, 23, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+/* Over a photograph rather than a pale wall, so it carries less white. */
+.glass-dim {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wall-track {
+    animation: none;
+  }
+}
