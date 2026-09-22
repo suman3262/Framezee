@@ -91,8 +91,21 @@ async function readCatalog() {
     }
   })
 
-  return { items, sizeList, categories: categoryRows, finishById, materials: materialRows }
+  // finishById is a Map and createdAt is a Date. Neither survives the cache, so the
+  // cached half hands back plain arrays and loadCatalog rebuilds them.
+  return {
+    items,
+    sizeList,
+    categories: categoryRows,
+    finishes: [...finishById.entries()],
+    materials: materialRows,
+  }
 }
+
+const cachedCatalog = unstable_cache(readCatalog, ['catalog-v2'], {
+  tags: [CATALOG_TAG],
+  revalidate: 3600,
+})
 
 /**
  * The cached front door.
@@ -102,12 +115,21 @@ async function readCatalog() {
  * single hit. The Vercel logs showed that as 2-second pages and, under crawler load,
  * 300-second timeouts.
  *
+ * The cache stores JSON, so a Map comes back as {} and a Date as a string. Rebuilding
+ * them here rather than at every call site means one place knows that, and callers keep
+ * the types they already expect.
+ *
  * One hour is the backstop; the tag is what actually keeps it fresh.
  */
-export const loadCatalog = unstable_cache(readCatalog, ['catalog-v1'], {
-  tags: [CATALOG_TAG],
-  revalidate: 3600,
-})
+export async function loadCatalog() {
+  const cached = await cachedCatalog()
+
+  return {
+    ...cached,
+    items: cached.items.map((i) => ({ ...i, createdAt: new Date(i.createdAt) })),
+    finishById: new Map(cached.finishes),
+  }
+}
 
 /** The dearest makeable size, for the "₹140 – ₹2,800" range on the home page cards. */
 function dearestForSizes(
