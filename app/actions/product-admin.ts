@@ -1,7 +1,8 @@
 'use server'
 
 import { and, eq, ne, sql } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { CATALOG_TAG } from '@/lib/storefront.ts'
 import { db } from '@/db/index.ts'
 import { orderItems, products } from '@/db/schema.ts'
 import { requireWrite } from '@/lib/auth.ts'
@@ -111,6 +112,7 @@ export async function createProduct(_prev: ProductResult, form: FormData): Promi
 
   revalidatePath('/admin/products')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
   revalidatePath('/')
   return { ok: `${f.title} added at /frames/${slug}.` }
 }
@@ -135,6 +137,7 @@ export async function updateProduct(_prev: ProductResult, form: FormData): Promi
 
   revalidatePath('/admin/products')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
   revalidatePath(`/frames/${slug}`)
   if (slug !== before.slug) revalidatePath(`/frames/${before.slug}`)
   return { ok: `${f.title} saved.` }
@@ -170,6 +173,7 @@ export async function deleteProduct(_prev: ProductResult, form: FormData): Promi
 
   revalidatePath('/admin/products')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
   revalidatePath('/')
   return { ok: `${row.title} deleted.` }
 }
@@ -189,4 +193,5 @@ export async function setProductCategory(form: FormData): Promise<void> {
   revalidatePath('/admin/products')
   revalidatePath('/admin/categories')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
 }

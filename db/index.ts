@@ -16,21 +16,25 @@ if (!url) throw new Error('DATABASE_URL is not set — copy .env.example to .env
  * keeps real errors visible.
  */
 /*
- * Pool size depends on where this runs, and getting it wrong is slow rather than broken.
+ * One modest pool, everywhere.
  *
- * Serverless: every request can be a fresh instance, so ten connections each exhausts
- * Supabase's pooler long before traffic does — one apiece.
+ * `max: 1` was tried for serverless on the theory that each request is its own instance.
+ * On Vercel's Fluid Compute that is false: the logs showed a single instance serving 23
+ * concurrent requests, all of them queued behind one connection, all of them timing out
+ * at 300 seconds. A page fires several queries in a Promise.all, so one connection is
+ * never enough.
  *
- * A long-running server is the opposite. One page fires half a dozen queries in a
- * Promise.all, and max:1 serialises them behind a single connection; locally that turned
- * 200ms pages into two-minute ones.
+ * Five is small enough that many instances do not exhaust Supabase's pooler, and large
+ * enough that a page's queries actually run in parallel.
+ *
+ * `prepare: false` is required by the transaction pooler and harmless anywhere else.
+ * `connect_timeout` is deliberately short: failing in 10 seconds is far better than
+ * holding a serverless instance open for five minutes.
  */
-const serverless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
-
 const client = postgres(url, {
-  prepare: false, // required by the transaction pooler, harmless anywhere else
-  max: serverless ? 1 : 10,
-  idle_timeout: serverless ? 20 : 0,
+  prepare: false,
+  max: 5,
+  idle_timeout: 30,
   connect_timeout: 10,
   onnotice: () => {},
 })

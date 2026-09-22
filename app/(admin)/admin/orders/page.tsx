@@ -3,6 +3,7 @@ import { and, desc, eq, ilike, or, sql, type SQL } from 'drizzle-orm'
 import { db } from '@/db/index.ts'
 import { orderItems, orders, users } from '@/db/schema.ts'
 import { requireStaff } from '@/lib/auth.ts'
+import { Submit } from '@/components/admin/submit.tsx'
 import { AdminShell, Card, Icon, StatusPill } from '@/components/admin/shell.tsx'
 import { when } from '@/app/(admin)/admin/page.tsx'
 import { advanceOrder } from '@/app/actions/admin.ts'
@@ -219,15 +220,16 @@ export default async function AdminOrders({
                                 <form key={to} action={advanceOrder}>
                                   <input type="hidden" name="id" value={o.id} />
                                   <input type="hidden" name="to" value={to} />
-                                  <button
+                                  <Submit
                                     className={`whitespace-nowrap rounded-lg px-2 py-[5px] text-[11px] font-bold ${
                                       to === 'cancelled' || to === 'refunded'
                                         ? 'bg-bad-bg text-bad'
                                         : 'bg-violet text-white'
                                     }`}
+                                    pendingLabel="Saving…"
                                   >
                                     {MOVE_LABEL[to] ?? to.replace(/_/g, ' ')}
-                                  </button>
+                                  </Submit>
                                 </form>
                               ))}
                             </span>

@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache'
 import { and, eq } from 'drizzle-orm'
 import { db } from '../db/index.ts'
 import { categories, materialRates, materials, products, sizes } from '../db/schema.ts'
@@ -5,8 +6,15 @@ import { priceFrom, fmtIn, type Band, type Limits } from './pricing.ts'
 
 export type FinishBands = { name: string; limits: Limits; bands: Band[] }
 
+/**
+ * The tag every page that reads the catalogue is cached under. Admin actions that change
+ * a product, category, moulding or rate revalidate it, so a price edit is visible at once
+ * without any page querying the database on a normal request.
+ */
+export const CATALOG_TAG = 'catalog'
+
 /** One load of everything the listing pages price against. */
-export async function loadCatalog() {
+async function readCatalog() {
   const [productRows, materialRows, rateRows, sizeRows, categoryRows] = await Promise.all([
     db
       .select({
@@ -85,6 +93,21 @@ export async function loadCatalog() {
 
   return { items, sizeList, categories: categoryRows, finishById, materials: materialRows }
 }
+
+/**
+ * The cached front door.
+ *
+ * The catalogue changes when someone edits the admin, not per request — but every
+ * storefront page was running five queries against a database in another region on every
+ * single hit. The Vercel logs showed that as 2-second pages and, under crawler load,
+ * 300-second timeouts.
+ *
+ * One hour is the backstop; the tag is what actually keeps it fresh.
+ */
+export const loadCatalog = unstable_cache(readCatalog, ['catalog-v1'], {
+  tags: [CATALOG_TAG],
+  revalidate: 3600,
+})
 
 /** The dearest makeable size, for the "₹140 – ₹2,800" range on the home page cards. */
 function dearestForSizes(

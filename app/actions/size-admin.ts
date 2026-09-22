@@ -1,7 +1,8 @@
 'use server'
 
 import { and, eq, sql } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { CATALOG_TAG } from '@/lib/storefront.ts'
 import { db } from '@/db/index.ts'
 import { frameThicknesses, matRates, sizes } from '@/db/schema.ts'
 import { requireSuperAdmin } from '@/lib/auth.ts'
@@ -53,6 +54,7 @@ export async function addSize(_prev: SizeResult, form: FormData): Promise<SizeRe
   revalidatePath('/admin/pricing')
   revalidatePath('/sizes')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
   return { ok: `${inches(w)} × ${inches(h)} in added — a ${shapeOf(w, h)} size.` }
 }
 
@@ -67,6 +69,7 @@ export async function toggleSize(form: FormData): Promise<void> {
   revalidatePath('/admin/pricing')
   revalidatePath('/sizes')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
 }
 
 /**
@@ -81,6 +84,7 @@ export async function deleteSize(form: FormData): Promise<void> {
   revalidatePath('/admin/pricing')
   revalidatePath('/sizes')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
 }
 
 // ── frame thickness ─────────────────────────────────────────────────────────
@@ -196,6 +200,7 @@ export async function addMatBand(_prev: SizeResult, form: FormData): Promise<Siz
 
   revalidatePath('/admin/pricing')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
   return {
     ok: `Mat board now costs ₹${rate.toFixed(2)}/sq-in up to ${inches(w)} × ${inches(h)} in. Every basket reprices on its next load.`,
   }
@@ -208,4 +213,5 @@ export async function deleteMatBand(form: FormData): Promise<void> {
   await db.delete(matRates).where(eq(matRates.id, id))
   revalidatePath('/admin/pricing')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
 }

@@ -1,7 +1,8 @@
 'use server'
 
 import { and, eq, ne, sql } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { CATALOG_TAG } from '@/lib/storefront.ts'
 import { db } from '@/db/index.ts'
 import {
   glazingOptions,
@@ -147,6 +148,7 @@ export async function updateMaterial(_prev: MaterialResult, form: FormData): Pro
 
   revalidatePath('/admin/pricing')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
   return {
     ok:
       f.name === before.name
@@ -190,6 +192,7 @@ export async function deleteMaterial(_prev: MaterialResult, form: FormData): Pro
   await db.delete(materials).where(eq(materials.id, id))
   revalidatePath('/admin/pricing')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
   return { ok: `${row.name} deleted.` }
 }
 

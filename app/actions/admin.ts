@@ -1,7 +1,8 @@
 'use server'
 
 import { eq } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { CATALOG_TAG } from '@/lib/storefront.ts'
 import { db } from '@/db/index.ts'
 import { categories, orders, products } from '@/db/schema.ts'
 import { requireWrite } from '@/lib/auth.ts'
@@ -45,6 +46,7 @@ export async function toggleProduct(form: FormData): Promise<void> {
   await db.update(products).set({ active }).where(eq(products.id, id))
   revalidatePath('/admin/products')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
 }
 
 export async function toggleCategory(form: FormData): Promise<void> {
@@ -55,4 +57,5 @@ export async function toggleCategory(form: FormData): Promise<void> {
   await db.update(categories).set({ active }).where(eq(categories.id, id))
   revalidatePath('/admin/categories')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
 }

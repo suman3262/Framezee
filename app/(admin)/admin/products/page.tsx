@@ -3,6 +3,7 @@ import { asc, eq, sql } from 'drizzle-orm'
 import { db } from '@/db/index.ts'
 import { categories, materials, orderItems, products } from '@/db/schema.ts'
 import { requireStaff } from '@/lib/auth.ts'
+import { Submit } from '@/components/admin/submit.tsx'
 import { AdminShell, Card, Icon } from '@/components/admin/shell.tsx'
 import {
   AddProductButton,
@@ -187,13 +188,14 @@ export default async function AdminProducts() {
                         <form action={toggleProduct}>
                           <input type="hidden" name="id" value={p.id} />
                           <input type="hidden" name="active" value={String(!p.active)} />
-                          <button
+                          <Submit
                             className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
                               p.active ? 'bg-ok-bg text-ok' : 'bg-subtle text-t3'
                             }`}
+                            pendingLabel="…"
                           >
                             {p.active ? 'Live' : 'Hidden'}
-                          </button>
+                          </Submit>
                         </form>
                       )}
                     </td>

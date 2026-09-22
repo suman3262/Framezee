@@ -14,6 +14,7 @@ import {
   matRates,
 } from '@/db/schema.ts'
 import { requireSuperAdmin } from '@/lib/auth.ts'
+import { Submit } from '@/components/admin/submit.tsx'
 import { AdminShell, Card, Icon } from '@/components/admin/shell.tsx'
 import { RateCard, type RateRow } from '@/components/admin/rate-card.tsx'
 import { SettingsForm } from '@/components/admin/settings-form.tsx'
@@ -467,13 +468,14 @@ function Toggle({
     <form action={action}>
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="active" value={String(!active)} />
-      <button
+      <Submit
         className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
           active ? 'bg-ok-bg text-ok' : 'bg-subtle text-t3'
         }`}
+        pendingLabel="…"
       >
         {active ? on : off}
-      </button>
+      </Submit>
     </form>
   )
 }

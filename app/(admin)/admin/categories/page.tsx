@@ -3,6 +3,7 @@ import { asc, eq, sql } from 'drizzle-orm'
 import { db } from '@/db/index.ts'
 import { categories, products } from '@/db/schema.ts'
 import { requireStaff } from '@/lib/auth.ts'
+import { Submit } from '@/components/admin/submit.tsx'
 import { AdminShell, Card, Icon } from '@/components/admin/shell.tsx'
 import { AddCategoryForm, EditCategory } from '@/components/admin/category-forms.tsx'
 import { toggleCategory } from '@/app/actions/admin.ts'
@@ -131,13 +132,14 @@ export default async function AdminCategories() {
                         <form action={toggleCategory}>
                           <input type="hidden" name="id" value={c.id} />
                           <input type="hidden" name="active" value={String(!c.active)} />
-                          <button
+                          <Submit
                             className={`rounded-full px-3 py-1 text-[11px] font-semibold ${
                               c.active ? 'bg-ok-bg text-ok' : 'bg-subtle text-t3'
                             }`}
+                            pendingLabel="…"
                           >
                             {c.active ? 'Shown' : 'Hidden'}
-                          </button>
+                          </Submit>
                         </form>
                       )}
                     </td>
@@ -175,13 +177,12 @@ function Move({ id, up, disabled }: { id: string; up: boolean; disabled: boolean
     <form action={moveCategory}>
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="up" value={String(up)} />
-      <button
+      <Submit
         disabled={disabled}
-        aria-label={up ? 'Move up' : 'Move down'}
-        className="grid size-6 place-items-center rounded text-t3 hover:bg-subtle hover:text-t1 disabled:opacity-25 disabled:hover:bg-transparent"
+        className="grid size-6 place-items-center rounded text-t3 hover:bg-subtle hover:text-t1 disabled:opacity-25"
       >
         <Icon name={up ? 'arrow_upward' : 'arrow_downward'} className="text-[15px]" />
-      </button>
+      </Submit>
     </form>
   )
 }

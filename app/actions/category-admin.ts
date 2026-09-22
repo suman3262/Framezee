@@ -1,7 +1,8 @@
 'use server'
 
 import { and, asc, eq, ne, sql } from 'drizzle-orm'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
+import { CATALOG_TAG } from '@/lib/storefront.ts'
 import { db } from '@/db/index.ts'
 import { categories, products } from '@/db/schema.ts'
 import { requireWrite } from '@/lib/auth.ts'
@@ -68,6 +69,7 @@ export async function createCategory(_prev: CategoryResult, form: FormData): Pro
 
   revalidatePath('/admin/categories')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
   return { ok: `${name} added.` }
 }
 
@@ -94,6 +96,7 @@ export async function renameCategory(_prev: CategoryResult, form: FormData): Pro
 
   revalidatePath('/admin/categories')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
   return {
     ok: slug === before.slug ? `Renamed to ${name}.` : `Renamed to ${name}, web address is now /${slug}.`,
   }
@@ -123,6 +126,7 @@ export async function moveCategory(form: FormData): Promise<void> {
 
   revalidatePath('/admin/categories')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
 }
 
 /**
@@ -164,5 +168,6 @@ export async function deleteCategory(_prev: CategoryResult, form: FormData): Pro
 
   revalidatePath('/admin/categories')
   revalidatePath('/browse')
+  revalidateTag(CATALOG_TAG, 'max')
   return { ok: `${row.name} deleted.` }
 }
