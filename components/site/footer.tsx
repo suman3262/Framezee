@@ -135,8 +135,9 @@ function FooterNav({ title, links }: { title: string; links: { label: string; hr
     <nav className="flex flex-col gap-2">
       <h2 className="font-display text-base font-semibold text-ink">{title}</h2>
       <ul className="flex flex-col gap-2">
+        {/* Keyed by label, not href: three Customer Care links share /help#faq. */}
         {links.map((l) => (
-          <li key={l.href}>
+          <li key={l.label}>
             <Link href={l.href} className="text-sm leading-5 text-body hover:text-ink">
               {l.label}
             </Link>

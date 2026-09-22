@@ -8,6 +8,7 @@
     "start": "next start",
     "test": "node --test \"lib/**/*.test.ts\"",
     "links": "node scripts/check-links.ts",
+    "db:check": "node --env-file=.env scripts/db-check.ts",
     "prices": "node scripts/price-preview.ts",
     "db:generate": "drizzle-kit generate",
     "db:push": "drizzle-kit push",

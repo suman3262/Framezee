@@ -48,8 +48,21 @@ export async function requireStaff(): Promise<AppUser> {
   if (user.suspendedAt) redirect(`${ADMIN_SIGN_IN}?denied=suspended`)
 
   const supabase = await createClient()
-  const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
-  if (data?.currentLevel !== 'aal2') redirect(`${ADMIN_SIGN_IN}?denied=mfa`)
+  const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+
+  if (data?.currentLevel !== 'aal2') {
+    // Turned away at the last gate. This used to be silent, which made it impossible to
+    // tell "wrong role" from "second factor not seen" from any angle but guessing.
+    console.warn('[admin] refused', {
+      email: user.email,
+      role: user.role,
+      currentLevel: data?.currentLevel ?? null,
+      nextLevel: data?.nextLevel ?? null,
+      methods: data?.currentAuthenticationMethods?.map((m) => (typeof m === 'string' ? m : m.method)) ?? [],
+      error: error?.message ?? null,
+    })
+    redirect(`${ADMIN_SIGN_IN}?denied=mfa`)
+  }
 
   return user
 }
