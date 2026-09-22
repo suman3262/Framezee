@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { desc, eq, sql } from 'drizzle-orm'
+import { desc, eq, inArray, sql } from 'drizzle-orm'
 import { db } from '@/db/index.ts'
 import { categories, orderItems, orders, products, users } from '@/db/schema.ts'
 import { requireStaff } from '@/lib/auth.ts'
@@ -17,7 +17,7 @@ import { fmtIn, fmtInr, fmtInrRupees } from '@/lib/pricing.ts'
 export default async function AdminDashboard() {
   const staff = await requireStaff()
 
-  const [[totals], byStatus, pending, [catalogue], daily, topCategory, topProduct] =
+  const [[totals], byStatus, pending, pendingItems, [catalogue], daily, topCategory, topProduct] =
     await Promise.all([
       db
         .select({
@@ -52,6 +52,34 @@ export default async function AdminDashboard() {
         .where(sql`${orders.status} in ('paid','ready_to_ship')`)
         .orderBy(orders.placedAt)
         .limit(6),
+
+      // Every line of those six orders in one go. This used to be a query per row, fired
+      // from inside the row component — which made the page's fan-out grow with the
+      // backlog, and a wide fan-out is exactly what the connection pool cannot take.
+      db
+        .select({
+          orderId: orderItems.orderId,
+          title: orderItems.title,
+          qty: orderItems.qty,
+          w: orderItems.widthTenths,
+          h: orderItems.heightTenths,
+          material: orderItems.materialName,
+          glazing: orderItems.glazingName,
+          mat: orderItems.matBoard,
+          print: orderItems.printService,
+        })
+        .from(orderItems)
+        .where(
+          inArray(
+            orderItems.orderId,
+            db
+              .select({ id: orders.id })
+              .from(orders)
+              .where(sql`${orders.status} in ('paid','ready_to_ship')`)
+              .orderBy(orders.placedAt)
+              .limit(6),
+          ),
+        ),
 
       db.select({ n: sql<number>`count(*)::int` }).from(products).where(eq(products.active, true)),
 
@@ -96,6 +124,13 @@ export default async function AdminDashboard() {
         .orderBy(desc(sql`sum(${orderItems.qty})`))
         .limit(1),
     ])
+
+  const itemsByOrder = new Map<string, typeof pendingItems>()
+  for (const it of pendingItems) {
+    const list = itemsByOrder.get(it.orderId)
+    if (list) list.push(it)
+    else itemsByOrder.set(it.orderId, [it])
+  }
 
   const counts = Object.fromEntries(byStatus.map((s) => [s.status, s.n]))
   const placed = Object.values(counts).reduce((a, b) => a + b, 0)
@@ -293,7 +328,7 @@ export default async function AdminDashboard() {
               </thead>
               <tbody>
                 {pending.map((o) => (
-                  <Row key={o.id} order={o} />
+                  <Row key={o.id} order={o} items={itemsByOrder.get(o.id) ?? []} />
                 ))}
               </tbody>
             </table>
@@ -325,9 +360,20 @@ export default async function AdminDashboard() {
 }
 
 /** A pending order, with enough craft detail to act on without opening it. */
-async function Row({
+function Row({
   order,
+  items,
 }: {
+  items: Array<{
+    title: string
+    qty: number
+    w: number
+    h: number
+    material: string | null
+    glazing: string | null
+    mat: boolean | null
+    print: boolean | null
+  }>
   order: {
     id: string
     orderNo: string
@@ -340,20 +386,6 @@ async function Row({
     address: unknown
   }
 }) {
-  const items = await db
-    .select({
-      title: orderItems.title,
-      qty: orderItems.qty,
-      w: orderItems.widthTenths,
-      h: orderItems.heightTenths,
-      material: orderItems.materialName,
-      glazing: orderItems.glazingName,
-      mat: orderItems.matBoard,
-      print: orderItems.printService,
-    })
-    .from(orderItems)
-    .where(eq(orderItems.orderId, order.id))
-
   const city = (order.address as { city?: string } | null)?.city
 
   return (
